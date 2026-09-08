@@ -1,0 +1,437 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IST Time Converter</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #0b0f14;
+            color: #ffffff;
+        }
+
+        .container {
+            width: 420px;
+            padding: 35px;
+            background: #111820;
+            border: 1px solid #26313d;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            margin-top: 8px;
+            margin-bottom: 30px;
+            color: #7f8b99;
+            font-size: 14px;
+        }
+
+        /* TIMEZONE BUTTONS */
+
+        .timezone-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .timezone-buttons button {
+            flex: 1;
+            padding: 14px;
+            border: 1px solid #303c49;
+            border-radius: 10px;
+            background: #171f28;
+            color: #aab4c0;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .timezone-buttons button:hover {
+            background: #202a35;
+        }
+
+        .timezone-buttons button.active {
+            background: #ffffff;
+            color: #0b0f14;
+            border-color: #ffffff;
+        }
+
+        /* INPUT */
+
+        .input-section {
+            text-align: left;
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #aab4c0;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        #timeInput {
+            width: 100%;
+            padding: 16px;
+            background: #0b1016;
+            color: #ffffff;
+            border: 1px solid #303c49;
+            border-radius: 10px;
+            font-size: 24px;
+            outline: none;
+            font-family: Arial, Helvetica, sans-serif;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+
+        #timeInput:focus {
+            border-color: #ffffff;
+        }
+
+        #timeInput::placeholder {
+            color: #4f5b68;
+        }
+
+        /* RESULT */
+
+        .result {
+            padding: 30px 20px;
+            background: #0b1016;
+            border: 1px solid #26313d;
+            border-radius: 15px;
+        }
+
+        .result-label {
+            color: #7f8b99;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .result-time {
+            font-size: 64px;
+            line-height: 1;
+            font-weight: 700;
+            letter-spacing: -2px;
+            color: #ffffff;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .timezone-name {
+            margin-top: 14px;
+            color: #7f8b99;
+            font-size: 14px;
+        }
+
+        .error {
+            margin-top: 10px;
+            color: #ff6b6b;
+            font-size: 12px;
+            min-height: 15px;
+        }
+
+        @media (max-width: 500px) {
+
+            .container {
+                width: calc(100% - 30px);
+                padding: 25px;
+            }
+
+            .result-time {
+                font-size: 52px;
+            }
+
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>IST Time Converter</h1>
+
+        <div class="subtitle">
+            Convert GMT+2 / GMT+3 to Indian Standard Time
+        </div>
+
+
+        <!-- TIMEZONE BUTTONS -->
+
+        <div class="timezone-buttons">
+
+            <button
+                id="gmt2"
+                onclick="selectTimezone(2)">
+                GMT +2
+            </button>
+
+            <button
+                id="gmt3"
+                class="active"
+                onclick="selectTimezone(3)">
+                GMT +3
+            </button>
+
+        </div>
+
+
+        <!-- TIME INPUT -->
+
+        <div class="input-section">
+
+            <label for="timeInput">
+                Enter Time (24 Hour)
+            </label>
+
+            <input
+                type="text"
+                id="timeInput"
+                value="12:00"
+                placeholder="HH:MM"
+                maxlength="5"
+                inputmode="numeric"
+                autocomplete="off"
+                oninput="handleInput()">
+
+            <div class="error" id="error"></div>
+
+        </div>
+
+
+        <!-- RESULT -->
+
+        <div class="result">
+
+            <div class="result-label">
+                IST
+            </div>
+
+            <div
+                class="result-time"
+                id="result">
+                14:30
+            </div>
+
+            <div class="timezone-name">
+                GMT +5:30 · India
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <script>
+
+        // ==========================================
+        // SETTINGS
+        // ==========================================
+
+        // GMT +3 is selected by default
+        let selectedTimezone = 3;
+
+
+        // ==========================================
+        // TIMEZONE SELECTION
+        // ==========================================
+
+        function selectTimezone(timezone) {
+
+            selectedTimezone = timezone;
+
+            document
+                .getElementById("gmt2")
+                .classList.remove("active");
+
+            document
+                .getElementById("gmt3")
+                .classList.remove("active");
+
+
+            if (timezone === 2) {
+
+                document
+                    .getElementById("gmt2")
+                    .classList.add("active");
+
+            } else {
+
+                document
+                    .getElementById("gmt3")
+                    .classList.add("active");
+
+            }
+
+
+            convertTime();
+        }
+
+
+        // ==========================================
+        // INPUT HANDLING
+        // ==========================================
+
+        function handleInput() {
+
+            const input =
+                document.getElementById("timeInput");
+
+            let value = input.value;
+
+            // Keep only numbers
+            value = value.replace(/\D/g, "");
+
+            // Maximum 4 digits
+            value = value.substring(0, 4);
+
+
+            // Automatically add :
+            if (value.length > 2) {
+
+                value =
+                    value.substring(0, 2) +
+                    ":" +
+                    value.substring(2);
+
+            }
+
+
+            input.value = value;
+
+            convertTime();
+        }
+
+
+        // ==========================================
+        // TIME CONVERSION
+        // ==========================================
+
+        function convertTime() {
+
+            const timeInput =
+                document.getElementById("timeInput").value;
+
+            const error =
+                document.getElementById("error");
+
+
+            // Require HH:MM
+            const match =
+                timeInput.match(
+                    /^([0-2][0-9]):([0-5][0-9])$/
+                );
+
+
+            if (!match) {
+
+                error.textContent =
+                    "Enter time as HH:MM";
+
+                return;
+            }
+
+
+            const hours =
+                Number(match[1]);
+
+            const minutes =
+                Number(match[2]);
+
+
+            // Hours must be 00–23
+            if (hours > 23) {
+
+                error.textContent =
+                    "Hours must be between 00 and 23";
+
+                return;
+            }
+
+
+            error.textContent = "";
+
+
+            // ======================================
+            // GMT → IST
+            //
+            // IST = GMT +5:30
+            //
+            // GMT+2 → IST = +3:30
+            // GMT+3 → IST = +2:30
+            // ======================================
+
+            const difference =
+                5.5 - selectedTimezone;
+
+
+            let totalMinutes =
+                (hours * 60) +
+                minutes +
+                (difference * 60);
+
+
+            // Handle crossing midnight
+
+            totalMinutes =
+                ((totalMinutes % 1440) + 1440) % 1440;
+
+
+            const resultHours =
+                Math.floor(totalMinutes / 60);
+
+            const resultMinutes =
+                totalMinutes % 60;
+
+
+            const formattedHours =
+                String(resultHours)
+                    .padStart(2, "0");
+
+            const formattedMinutes =
+                String(resultMinutes)
+                    .padStart(2, "0");
+
+
+            document
+                .getElementById("result")
+                .textContent =
+                `${formattedHours}:${formattedMinutes}`;
+        }
+
+
+        // ==========================================
+        // INITIAL CONVERSION
+        // ==========================================
+
+        convertTime();
+
+    </script>
+
+</body>
+</html>
+```
